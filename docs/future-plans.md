@@ -1,0 +1,2 @@
+### Data
+- Prototyping will utilise Finnhub Stock API free tier. After agent pipeline is successfully tested, we can swap out the data end point and use SEC EDGAR with custom `us-gaap:*` tags for production.
