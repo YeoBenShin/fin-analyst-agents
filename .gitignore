@@ -1,1 +1,8 @@
-.env
+*.env
+*.db
+__pycache__*
+
+ztest*
+future_plans.md
+INSTRUCTIONS.md
+opencode.json

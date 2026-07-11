@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import finnhub
 import os
-import sys
+from helper_functions.db_helper import save_to_db, load_from_db
 
 def get_finnhub_client(env_path: str = None) -> finnhub.Client:
     """
@@ -350,12 +350,27 @@ def compute_fao_metrics(extracted_data: dict) -> dict:
         "metrics_by_year": metrics_by_year
     }
 
-def fao_pipeline(symbol: str, env_path: str = None) -> dict:
+def fao_pipeline(symbol: str, env_path: str = None, db_path: str = None) -> dict:
     """
     Financial Analysis Orchestration Pipeline.
     Given a stock symbol, extracts its profile and financials, 
     and computes the key financial ratios.
+    Uses SQLite database as a cache layer for historical data queries.
     """
+    if db_path is None:
+        db_path = os.getenv("DB_PATH", "financial_data.db") 
+        
+    # Check cache first
+    cached_metrics = load_from_db(symbol, db_path)
+    if cached_metrics is not None:
+        return cached_metrics
+        
+    # Extract & compute metrics
     data = extract_company_data(symbol, env_path)
     metrics = compute_fao_metrics(data)
+    
+    # Save to SQLite database cache
+    save_to_db(metrics, db_path)
+    
     return metrics
+
