@@ -3,11 +3,11 @@ import sqlite3
 import unittest
 from unittest.mock import patch
 
-# Add parent helper_functions directory to path to import get_metrics.
+# Add parent helper_functions directory to path to import the pipeline helper.
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from get_metrics import fao_pipeline
+from get_metrics import fda_pipeline
 
 class TestDBCache(unittest.TestCase):
     def setUp(self):
@@ -73,7 +73,7 @@ class TestDBCache(unittest.TestCase):
         
         # 1. First call: Should query the mock API (extract_company_data)
         with patch('get_metrics.extract_company_data', return_value=mock_raw_data) as mock_extract:
-            metrics1 = fao_pipeline(symbol, env_path=None, db_path=self.db_path)
+            metrics1 = fda_pipeline(symbol, env_path=None, db_path=self.db_path)
             
             # Verify it was called once
             mock_extract.assert_called_once_with(symbol, None)
@@ -95,8 +95,8 @@ class TestDBCache(unittest.TestCase):
         conn.close()
         
         # 2. Second call: Should read from database and NOT call extract_company_data
-        with patch('get_metrics.extract_company_data') as mock_extract2:
-            metrics2 = fao_pipeline(symbol, env_path=None, db_path=self.db_path)
+        with patch('get_metrics_helper.extract_company_data') as mock_extract2:
+            metrics2 = fda_pipeline(symbol, env_path=None, db_path=self.db_path)
             
             # Verify API was NOT called
             mock_extract2.assert_not_called()
@@ -104,10 +104,20 @@ class TestDBCache(unittest.TestCase):
             # Verify data returned from cache matches the first run's shape
             self.assertEqual(metrics1["company_info"]["symbol"], metrics2["company_info"]["symbol"])
             self.assertEqual(metrics1["company_info"]["name"], metrics2["company_info"]["name"])
-            self.assertEqual(metrics1["metrics_by_year"], metrics2["metrics_by_year"])
+            self.assertEqual(len(metrics1["financial_extraction"]), len(metrics2["financial_extraction"]))
+            self.assertEqual(metrics1["financial_extraction"][0]["ticker"], metrics2["financial_extraction"][0]["ticker"])
+            self.assertEqual(metrics1["financial_extraction"][0]["fiscal_year"], metrics2["financial_extraction"][0]["fiscal_year"])
+            self.assertEqual(
+                metrics1["financial_extraction"][0]["option_behaviours"]["current_ratio"],
+                metrics2["financial_extraction"][0]["option_behaviours"]["current_ratio"],
+            )
+            self.assertEqual(
+                metrics1["financial_extraction"][0]["cash_flow_statement"]["dividends_paid"],
+                metrics2["financial_extraction"][0]["cash_flow_statement"]["dividends_paid"],
+            )
 
     def test_query_database(self):
-        from get_metrics import query_database, save_to_db
+        from db_helper import query_database, save_to_db
         
         # Save some mock data first
         mock_data = {
@@ -119,10 +129,28 @@ class TestDBCache(unittest.TestCase):
                 "industry": "Automotive",
                 "currency": "USD"
             },
-            "metrics_by_year": {
-                "2023": {"source": "reported", "revenue": 96000000000.0},
-                "2024": {"source": "reported", "revenue": 105000000000.0}
-            }
+            "financial_extraction": [
+                {
+                    "ticker": "TSLA",
+                    "source_utilized": "reported",
+                    "fiscal_year": 2023,
+                    "income_statement": {"revenue": 96000000000.0, "gross_profit": None, "ebitda": None, "operating_income": None, "net_income": None, "eps_diluted": None, "tax_expense": None},
+                    "balance_sheet": {"total_assets": None, "cash_and_equivalents": None, "receivables": None, "inventory": None, "total_liabilities": None, "short_term_debt": None, "long_term_debt": None, "total_equity": None, "retained_earnings": None},
+                    "cash_flow_statement": {"net_cash_provided_by_operating_activities": None, "capital_expenditures": None, "free_cash_flow": None, "dividends_paid": None, "repurchase_of_common_stock": None},
+                    "corporate_actions": {"dividend_history": [], "buyback_history": []},
+                    "option_behaviours": {"ebitda_margin": None, "current_ratio": None, "book_value": None, "dividend_per_share": None, "dividend_yield": None, "pe_ratio": None, "pb_ratio": None, "income_growth_rate": None, "revenue_growth_rate": None}
+                },
+                {
+                    "ticker": "TSLA",
+                    "source_utilized": "reported",
+                    "fiscal_year": 2024,
+                    "income_statement": {"revenue": 105000000000.0, "gross_profit": None, "ebitda": None, "operating_income": None, "net_income": None, "eps_diluted": None, "tax_expense": None},
+                    "balance_sheet": {"total_assets": None, "cash_and_equivalents": None, "receivables": None, "inventory": None, "total_liabilities": None, "short_term_debt": None, "long_term_debt": None, "total_equity": None, "retained_earnings": None},
+                    "cash_flow_statement": {"net_cash_provided_by_operating_activities": None, "capital_expenditures": None, "free_cash_flow": None, "dividends_paid": None, "repurchase_of_common_stock": None},
+                    "corporate_actions": {"dividend_history": [], "buyback_history": []},
+                    "option_behaviours": {"ebitda_margin": None, "current_ratio": None, "book_value": None, "dividend_per_share": None, "dividend_yield": None, "pe_ratio": None, "pb_ratio": None, "income_growth_rate": None, "revenue_growth_rate": None}
+                }
+            ]
         }
         save_to_db(mock_data, self.db_path)
         

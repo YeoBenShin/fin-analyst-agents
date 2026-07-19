@@ -1,8 +1,18 @@
 # Rules
-- When adding a new change, always add a summary regarding the change before adding the rest of the details.
+- When adding a new change, keep it concise and straight to the point. 
 - Only add changes to `Summary of current changes`
 
 # Summary of current changes 
+
+## End-to-End Pipeline Test
+- Added `test_process_metrics.py` in `.agents/skills/financial-data-agent/scripts/test/` to validate the full `process_metrics` pipeline using `finnhub_api_output.json`.
+- Fixed type mismatch bug in `_extract_year()` (returned `str` instead of `int`), which prevented basic financials computed metrics from being merged into reported financials by year.
+- Fixed "Cash Flow Statement Metrics" being incorrectly stored in `ic_metrics` (income statement dict) instead of `cf_metrics` (cash flow statement dict).
+- Fixed `else` branch in computed metrics merging to include `year` key for years without reported financials.
+
+## Annual Metrics Parser
+- Created `parse_annual_metrics(data)` in `helper_functions/parse_annual_metrics.py` to flatten the `series.annual` Finnhub structure into `{year: {metric: value}}` format.
+- Added unit tests in `helper_functions/test/test_parse_annual_metrics.py`.
 
 ## SQLite Caching for Financial Historical Data
 - Added a SQLite caching layer to `fao_pipeline` in `helper_functions/get_metrics.py`.
