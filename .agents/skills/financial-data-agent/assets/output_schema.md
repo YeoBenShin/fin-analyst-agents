@@ -1,73 +1,81 @@
 ```json
 {
-  "financial_extraction": [
-    {
-      "ticker": "string",
-      "source_utilized": "string",
-      "fiscal_year": "integer",
-      "income_statement": {
-        "revenue": "float",
-        "gross_profit": "float",
-        "ebitda": "float",
-        "operating_income": "float",
-        "net_income": "float",
-        "eps_diluted": "float",
-        "tax_expense": "float"
-      },
-      "balance_sheet": {
-        "total_assets": "float",
-        "cash_and_equivalents": "float",
-        "receivables": "float",
-        "inventory": "float",
-        "total_liabilities": "float",
-        "short_term_debt": "float",
-        "long_term_debt": "float",
-        "total_equity": "float",
-        "retained_earnings": "float"
-      },
-      "cash_flow_statement": {
-        "net_cash_provided_by_operating_activities": "float",
-        "capital_expenditures": "float",
-        "free_cash_flow": "float",
-        "dividends_paid": "float",
-        "repurchase_of_common_stock": "float"
-      },
-      "corporate_actions": {
-        "dividend_history": [{"ex_date": "string", "amount": "float"}],
-        "buyback_history": [{"fiscal_year": "integer", "total_spend": "float"}]
-      },
-      "computed_metrics": {
-        "ebitda_margin": "float",
-        "current_ratio": "float",
-        "book_value": "float",
-        "dividend_per_share": "float",
-        "dividend_yield": "float",
-        "pe_ratio": "float",
-        "pb_ratio": "float",
-        "income_growth_rate": "float",
-        "revenue_growth_rate": "float"
-      }
+  "financial_extraction": 
+    "company_info": {
+      "symbol": "string",
+      "name": "string",
+      "country": "string",
+      "sector": "string",
+      "industry": "string",
+      "currency": "string",
     }
-  ]
+    "metrics": [
+      {
+        "metadata": {
+          "shares_outstanding": "float"
+          "year": "int"
+        }
+        "ticker": "string",
+        "source_utilized": "string",
+        "fiscal_year": "integer",
+        "income_statement": {
+          "revenue": "float",
+          "cost_of_sales": "float",
+          "gross_profit": "float",
+          "research_and_development": "float",
+          "selling_general_admin": "float",
+          "operating_expense": "float",
+          "operating_income": "float",
+          "ebitda": "float",
+          "income_tax_expense": "float",
+          "net_income": "float",
+        },
+        "balance_sheet": {
+          "total_assets": "float",
+          "liabilities_total": "float",
+          "stockholders_equity": "float",
+          "cash_and_equivalents": "float",
+          "accounts_receivable": "float",
+          "accounts_payable": "float",
+          "inventory": "float",
+          "ppe": "float",
+          "short_term_debt": "float",
+          "long_term_debt": "float",
+          "retained_earnings": "float"
+        },
+        "cash_flow_statement": {
+          "net_cash_from_operations": "float",
+          "capital_expenditures": "float",
+          "depreciation_amortization": "float",
+          "share_based_compensation": "float",
+          "repurchases_of_common_stock": "float",
+          "dividends_paid": "float",
+          "proceeds_from_issuance_of_long_term_debt": "float",
+          "repayments_of_long_term_debt": "float",
+          "free_cash_flow": "float"
+        },
+        "computed_metrics": {
+          "book_value": "float",
+          "gross_margin": "float",
+          "operating_margin": "float",
+          "pretax_margin": "float",
+          "net_margin": "float",
+          "roa": "float",
+          "roe": "float",
+          "roic": "float",
+          "current_ratio": "float",
+          "cash_ratio": "float",
+          "quick_ratio": "float",
+          "payout_ratio": "float",
+          "dividend_yield": "float",
+          "eps": "float",
+          "pb": "float",
+          "pe": "float",
+          "ev_ebitda": "float",
+          "ev_revenue": "float",
+          "total_debt_to_equity": "float"
+        }
+      }
+    ]
 }
 ```
-## output that is stored in the data that is received and processed from finnhub
-{
-  'symbol': 'AAPL',
-  'year': '2025',
-  'source': 'reported_financials',
-  'revenue': 416161000000.0,
-  'net_income': 112010000000.0,
-  'operating_income': 133050000000.0,
-  'ebitda': 144748000000.0, 
-  'ebitda_margin': 0.3478173110887373, 
-  'current_ratio': 0.8932929222186667, 
-  'book_value': 73733000000.0, 
-  'dividends_paid': 15421000000.0, 
-  'dividend_per_share': 1.0499504335700902, 
-  'dividend_yield': 0.0033297933323927762, 
-  'pe_ratio': 41.346472236407465, 
-  'pb_ratio': 62.81065947676075, 
-  'income_growth_rate': 0.19495177946573355, 
-  'revenue_growth_rate': 0.0642551178283274
-}

@@ -24,6 +24,8 @@ class TestProcessMetrics(unittest.TestCase):
     def setUpClass(cls):
         cls.raw = load_fixture("finnhub_api_output.json")
         cls.result = process_metrics(cls.raw)
+        # with open (os.path.join(HOME_PATH, ".agents/skills/financial-data-agent/assets", "processed_metrics.json"), "w") as f:
+        #     json.dump(cls.result, f, indent=2, default=str)
 
     def test_output_has_company_info(self):
         info = self.result["company_info"]
@@ -61,7 +63,7 @@ class TestProcessMetrics(unittest.TestCase):
 
         bs = year["balance_sheet"]
         self.assertEqual(bs["total_assets"], 359241000000)
-        self.assertEqual(bs["cash_and_cash_equivalents"], 35934000000.0)
+        self.assertEqual(bs["cash_and_equivalents"], 35934000000.0)
         self.assertEqual(bs["accounts_receivable"], 39777000000)
         self.assertEqual(bs["inventory"], 5718000000)
         self.assertEqual(bs["current_assets"], 147957000000)
@@ -71,7 +73,7 @@ class TestProcessMetrics(unittest.TestCase):
         self.assertEqual(bs["long_term_debt_current"], 12350000000.0)
         self.assertEqual(bs["long_term_debt_noncurrent"], 78328000000.0)
         self.assertEqual(bs["retained_earnings"], -14264000000)
-        self.assertEqual(bs["propertyPlantAndEquipmentNet"], 49834000000.0)
+        self.assertEqual(bs["ppe"], 49834000000.0)
 
         ic = year["income_statement"]
         self.assertEqual(ic["revenue"], 416161000000.0)
@@ -88,11 +90,11 @@ class TestProcessMetrics(unittest.TestCase):
         bs = year["balance_sheet"]
         for key in (
             "total_assets", "liabilities_total", "stockholders_equity",
-            "cash_and_cash_equivalents", "accounts_receivable",
+            "cash_and_equivalents", "accounts_receivable",
             "inventory", "current_assets", "liabilities_current",
             "liabilities_noncurrent", "long_term_debt_current",
             "long_term_debt_noncurrent", "retained_earnings",
-            "propertyPlantAndEquipmentNet",
+            "ppe",
         ):
             self.assertIn(key, bs)
 
@@ -131,11 +133,11 @@ class TestProcessMetrics(unittest.TestCase):
     def test_computed_metrics_merged(self):
         extraction = self.result["financial_extraction"]
         self.assertTrue(
-            any("bookValue" in e for e in extraction),
+            any("book_value" in e for e in extraction),
             "No computed metrics found in any entry"
         )
         self.assertTrue(
-            any("longtermDebtTotalCapital" in e for e in extraction),
+            any("longterm_debt_total_capital" in e for e in extraction),
             "No longtermDebtTotalCapital found in any entry"
         )
 

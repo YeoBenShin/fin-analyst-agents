@@ -121,7 +121,7 @@ def _extract_yearly_metrics(
     bs_metrics["non-current_assets"] = _get_value(bs, ["AssetsNoncurrent"], concept_set=bs_concepts)
     bs_metrics["marketable_securities_short_term"] = _get_value(bs, ["AvailableForSaleSecuritiesCurrent"], concept_set=bs_concepts)
     bs_metrics["marketable_securities_long_term"] = _get_value(bs, ["AvailableForSaleSecuritiesNoncurrent"], concept_set=bs_concepts)
-    bs_metrics["cash_and_cash_equivalents"] = _get_value(bs, ["CashAndCashEquivalentsAtCarryingValue"], concept_set=bs_concepts)
+    bs_metrics["cash_and_equivalents"] = _get_value(bs, ["CashAndCashEquivalentsAtCarryingValue"], concept_set=bs_concepts)
     bs_metrics["commercial_paper"] = _get_value(bs, ["CommercialPaper"], concept_set=bs_concepts)
     bs_metrics["deferred_revenue"] = _get_value(bs, ["DeferredRevenueCurrent"], concept_set=bs_concepts)
     bs_metrics["deferred_revenue_noncurrent"] = _get_value(bs, ["DeferredRevenueNoncurrent"], concept_set=bs_concepts)
@@ -136,7 +136,7 @@ def _extract_yearly_metrics(
     bs_metrics["other_noncurrent_assets"] = _get_value(bs, ["OtherAssetsNoncurrent"], concept_set=bs_concepts)
     bs_metrics["other_current_liabilities"] = _get_value(bs, ["OtherLiabilitiesCurrent"], concept_set=bs_concepts)
     bs_metrics["other_noncurrent_liabilities"] = _get_value(bs, ["OtherLiabilitiesNoncurrent"], concept_set=bs_concepts)
-    bs_metrics["propertyPlantAndEquipmentNet"] = _get_value(bs, ["PropertyPlantAndEquipmentNet"], concept_set=bs_concepts)
+    bs_metrics["ppe"] = _get_value(bs, ["PropertyPlantAndEquipmentNet"], concept_set=bs_concepts)
     bs_metrics["retained_earnings"] = _get_value(bs, ["RetainedEarningsAccumulatedDeficit"], concept_set=bs_concepts)
     bs_metrics["stockholders_equity"] = _get_value(bs, ["StockholdersEquity"], concept_set=bs_concepts)
 
@@ -205,6 +205,18 @@ def _extract_yearly_metrics(
 def _extract_year(date: str) -> int:
     return int(date.split("-")[0])
 
+def _camelCase_to_snake_case(name: str) -> str:
+    """
+    Converts a camelCase string to snake_case.
+    """
+    result = ""
+    for letter in name:
+        if letter.isupper():
+            result += "_" + letter.lower()
+        else:
+            result += letter
+    return result.lstrip("_")
+
 def _sort_computed_annual_metrics(
     report: dict | None = None,
 ) -> dict:
@@ -215,6 +227,8 @@ def _sort_computed_annual_metrics(
     report = report or {}
     grouped = {}
     for metric_key, entries in report.items():
+        # convert metric_key from camelCase to snake_case for consistency with other metrics
+        metric_key = _camelCase_to_snake_case(metric_key)
         for entry in entries:
             period = entry.get("period")
             value = entry.get("v")
