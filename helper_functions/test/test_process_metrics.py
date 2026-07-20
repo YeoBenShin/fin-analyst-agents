@@ -3,7 +3,13 @@ import os
 import unittest
 
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_helper_functions_dir = os.path.dirname(_current_dir)  # helper_functions/
+_project_root = os.path.dirname(_helper_functions_dir)  # project root
+sys.path.extend([
+    _helper_functions_dir,
+    _project_root,
+])
 from get_metrics import process_metrics
 
 from dotenv import load_dotenv

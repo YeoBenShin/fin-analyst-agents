@@ -2,7 +2,14 @@ from dotenv import load_dotenv
 import finnhub
 import os
 
-from db_helper import save_to_db, load_from_db
+import sys
+_current_dir = os.path.dirname(os.path.abspath(__file__))  # helper_functions/
+_project_root = os.path.dirname(_current_dir)  # project root
+sys.path.extend([
+    _current_dir,
+    _project_root,
+])
+from db.db_helper import save_to_db, load_from_db
 
 def _get_finnhub_client(env_path: str = None) -> finnhub.Client:
     """

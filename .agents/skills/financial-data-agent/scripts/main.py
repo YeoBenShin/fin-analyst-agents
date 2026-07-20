@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
-from get_metrics import fda_pipeline
-from db_helper import query_database
 import os
-import sys 
 from dotenv import load_dotenv
+
+import sys
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_fda_dir = os.path.dirname(_current_dir)  # .agents/skills/financial-data-agent/
+_project_root = os.path.dirname(os.path.dirname(os.path.dirname(_fda_dir)))  # project root
+sys.path.extend([
+    _project_root,
+])
+from helper_functions.get_metrics import fda_pipeline
+from db.db_helper import query_database
 
 load_dotenv()
 DB_PATH = os.getenv("DB_PATH")
@@ -15,9 +22,9 @@ def test_save_and_query(ticker: str = "AAPL"):
     print(f"Got {len(metrics['financial_extraction'])} fiscal years of data\n")
 
     # 2. Query the DB with a SQL statement to verify data
-    query = f"SELECT * FROM financial_metrics WHERE symbol = '{ticker}' ORDER BY year"
+    query = f"SELECT * FROM income_statements WHERE symbol = '{ticker}' ORDER BY year"
     results = query_database(query=query, db_path=DB_PATH)
-    print("Stored financial_metrics rows:")
+    print("Stored income_statements rows:")
     for row in results:
         print(row)
 

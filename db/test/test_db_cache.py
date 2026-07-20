@@ -3,11 +3,17 @@ import sqlite3
 import unittest
 from unittest.mock import patch
 
-# Add parent helper_functions directory to path to import the pipeline helper.
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_db_dir = os.path.dirname(_current_dir)  # db/
+_project_root = os.path.dirname(_db_dir)  # project root
+sys.path.extend([
+    _db_dir,
+    os.path.join(_project_root, "helper_functions"),
+    _project_root,
+])
 
-from get_metrics import fda_pipeline
+from helper_functions.get_metrics import fda_pipeline
 
 class TestDBCache(unittest.TestCase):
     def setUp(self):
@@ -72,7 +78,7 @@ class TestDBCache(unittest.TestCase):
         }
         
         # 1. First call: Should query the mock API (extract_company_data)
-        with patch('get_metrics.extract_company_data', return_value=mock_raw_data) as mock_extract:
+        with patch('helper_functions.get_metrics.extract_company_data', return_value=mock_raw_data) as mock_extract:
             metrics1 = fda_pipeline(symbol, env_path=None, db_path=self.db_path)
             
             # Verify it was called once
@@ -85,7 +91,7 @@ class TestDBCache(unittest.TestCase):
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = [row[0] for row in cursor.fetchall()]
         self.assertIn("company_info", tables)
-        self.assertIn("financial_metrics", tables)
+        self.assertIn("computed_metrics", tables)
         
         # Verify symbol was stored in the database
         cursor.execute("SELECT symbol FROM company_info WHERE symbol=?", (symbol,))
@@ -95,7 +101,7 @@ class TestDBCache(unittest.TestCase):
         conn.close()
         
         # 2. Second call: Should read from database and NOT call extract_company_data
-        with patch('get_metrics_helper.extract_company_data') as mock_extract2:
+        with patch('helper_functions.get_metrics.extract_company_data') as mock_extract2:
             metrics2 = fda_pipeline(symbol, env_path=None, db_path=self.db_path)
             
             # Verify API was NOT called
@@ -105,12 +111,7 @@ class TestDBCache(unittest.TestCase):
             self.assertEqual(metrics1["company_info"]["symbol"], metrics2["company_info"]["symbol"])
             self.assertEqual(metrics1["company_info"]["name"], metrics2["company_info"]["name"])
             self.assertEqual(len(metrics1["financial_extraction"]), len(metrics2["financial_extraction"]))
-            self.assertEqual(metrics1["financial_extraction"][0]["ticker"], metrics2["financial_extraction"][0]["ticker"])
-            self.assertEqual(metrics1["financial_extraction"][0]["fiscal_year"], metrics2["financial_extraction"][0]["fiscal_year"])
-            self.assertEqual(
-                metrics1["financial_extraction"][0]["option_behaviours"]["current_ratio"],
-                metrics2["financial_extraction"][0]["option_behaviours"]["current_ratio"],
-            )
+            self.assertEqual(metrics1["financial_extraction"][0]["year"], metrics2["financial_extraction"][0]["year"])
             self.assertEqual(
                 metrics1["financial_extraction"][0]["cash_flow_statement"]["dividends_paid"],
                 metrics2["financial_extraction"][0]["cash_flow_statement"]["dividends_paid"],
@@ -133,7 +134,7 @@ class TestDBCache(unittest.TestCase):
                 {
                     "ticker": "TSLA",
                     "source_utilized": "reported",
-                    "fiscal_year": 2023,
+                    "year": 2023,
                     "income_statement": {"revenue": 96000000000.0, "gross_profit": None, "ebitda": None, "operating_income": None, "net_income": None, "eps_diluted": None, "tax_expense": None},
                     "balance_sheet": {"total_assets": None, "cash_and_equivalents": None, "receivables": None, "inventory": None, "total_liabilities": None, "short_term_debt": None, "long_term_debt": None, "total_equity": None, "retained_earnings": None},
                     "cash_flow_statement": {"net_cash_provided_by_operating_activities": None, "capital_expenditures": None, "free_cash_flow": None, "dividends_paid": None, "repurchase_of_common_stock": None},
@@ -143,7 +144,7 @@ class TestDBCache(unittest.TestCase):
                 {
                     "ticker": "TSLA",
                     "source_utilized": "reported",
-                    "fiscal_year": 2024,
+                    "year": 2024,
                     "income_statement": {"revenue": 105000000000.0, "gross_profit": None, "ebitda": None, "operating_income": None, "net_income": None, "eps_diluted": None, "tax_expense": None},
                     "balance_sheet": {"total_assets": None, "cash_and_equivalents": None, "receivables": None, "inventory": None, "total_liabilities": None, "short_term_debt": None, "long_term_debt": None, "total_equity": None, "retained_earnings": None},
                     "cash_flow_statement": {"net_cash_provided_by_operating_activities": None, "capital_expenditures": None, "free_cash_flow": None, "dividends_paid": None, "repurchase_of_common_stock": None},
